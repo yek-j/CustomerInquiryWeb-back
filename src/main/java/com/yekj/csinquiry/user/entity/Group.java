@@ -12,7 +12,7 @@ import java.util.List;
 public class Group {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "group_id")
-    private long id;
+    private Long id;
 
     private String name;
 

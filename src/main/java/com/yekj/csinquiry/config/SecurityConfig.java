@@ -14,8 +14,6 @@ import org.springframework.web.cors.CorsConfigurationSource;
 
 import java.util.List;
 
-import static org.springframework.security.config.Customizer.withDefaults;
-
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -43,7 +41,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests((authz) -> authz
                         .requestMatchers(HttpMethod.POST,"/signup").permitAll()
                         .requestMatchers(HttpMethod.POST,"/signin").permitAll()
-                ).httpBasic(withDefaults());
+                );
 
         return http.build();
     }

@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @Slf4j
 public class UserController {
@@ -39,9 +42,14 @@ public class UserController {
     }
 
     @PostMapping("/signup")
-    public String signUp(@RequestBody UserDTO user) {
+    public ResponseEntity<Map> signUp(@RequestBody UserDTO user) {
         // 회원가입
-        if(signupService.addUser(user)) return "{\"result\": \"ok\"}";
-        else  return "{\"result\": \"fail\"}";
+        Map<String, String> response = new HashMap<>();
+
+        if(signupService.addUser(user)) response.put("result", "ok");
+        else response.put("result", "faile");
+
+        return ResponseEntity.ok(response);
     }
+
 }

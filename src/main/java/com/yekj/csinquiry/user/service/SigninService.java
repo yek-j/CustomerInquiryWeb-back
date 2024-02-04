@@ -34,7 +34,7 @@ public class SigninService {
             throw new BadCredentialsException("로그인에 실패했습니다.");
         }
 
-        if(passwordEncoder.matches(reqUser.getPassword(), user.get().getPassword())) {
+        if(!passwordEncoder.matches(reqUser.getPassword(), user.get().getPassword())) {
             throw new BadCredentialsException("로그인에 실패했습니다.");
         }
 

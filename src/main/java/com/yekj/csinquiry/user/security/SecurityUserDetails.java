@@ -2,8 +2,10 @@ package com.yekj.csinquiry.user.security;
 
 import com.yekj.csinquiry.user.entity.User;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 public class SecurityUserDetails implements UserDetails {
@@ -16,8 +18,17 @@ public class SecurityUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+        Collection<GrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority("ROLE_USER")); // 기본적으로 USER 권한 추가
+
+        if ("Y".equals(this.user.getAdmin())) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN")); // "Y"일 경우 ADMIN 권한 추가
+        }
+
+        return authorities;
     }
+
+    public String getEmail() { return user.getEmail(); }
 
     @Override
     public String getPassword() {
@@ -31,14 +42,12 @@ public class SecurityUserDetails implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        if(user.getGroup().getId() == null || user.getEnabled().equals("Y")) return false;
-        else return true;
+        return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        if(user.getGroup().getId() == null || user.getEnabled().equals("Y")) return false;
-        else return true;
+        return true;
     }
 
     @Override
@@ -48,7 +57,7 @@ public class SecurityUserDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        if(user.getGroup().getId() == null || user.getEnabled().equals("Y")) return false;
+        if(user.getEnabled().equals("Y")) return false;
         else return true;
     }
 }

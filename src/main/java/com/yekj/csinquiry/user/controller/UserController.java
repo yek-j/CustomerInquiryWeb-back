@@ -9,9 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -48,6 +47,17 @@ public class UserController {
 
         if(signupService.addUser(user)) response.put("result", "ok");
         else response.put("result", "faile");
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/chkadmin")
+    public ResponseEntity<Map> chkAdmin(Authentication authentication) {
+        boolean admin = authentication.getAuthorities().stream().anyMatch(role -> role.getAuthority().toString().equals("ROLE_ADMIN"));
+        Map<String, String> response = new HashMap<>();
+
+        if(admin) response.put("admin", "admin");
+        else response.put("admin", "user");
 
         return ResponseEntity.ok(response);
     }

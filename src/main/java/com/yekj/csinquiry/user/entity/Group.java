@@ -16,6 +16,8 @@ public class Group {
 
     private String name;
 
+    private String description;
+
     @OneToMany(mappedBy = "group")
     private List<User> users = new ArrayList<>();
 }

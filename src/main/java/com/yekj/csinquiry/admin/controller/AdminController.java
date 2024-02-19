@@ -41,9 +41,9 @@ public class AdminController {
     }
 
     @PostMapping("/set-group")
-    public ResponseEntity<String> setGroup(@RequestBody UserAuthDTO group) {
-
-        return ResponseEntity.ok("");
+    public ResponseEntity<String> setUserAuth(@RequestBody UserAuthDTO userAuth) {
+        adminService.setUserAuth(userAuth);
+        return ResponseEntity.ok("성공");
     }
 
     @PostMapping("/add-group")

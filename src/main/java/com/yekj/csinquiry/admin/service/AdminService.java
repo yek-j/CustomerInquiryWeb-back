@@ -1,6 +1,5 @@
 package com.yekj.csinquiry.admin.service;
 
-import com.yekj.csinquiry.admin.dto.GroupListDTO;
 import com.yekj.csinquiry.admin.dto.UserAuthDTO;
 import com.yekj.csinquiry.user.entity.Group;
 import com.yekj.csinquiry.user.entity.User;
@@ -65,8 +64,16 @@ public class AdminService {
         return userAuthDTO;
     }
 
-    public void setGroup() {
+    public void setUserAuth(UserAuthDTO newUserGroup) {
+        Optional<User> user = userRepository.findUserByEmail(newUserGroup.getEmail());
+        Group group = new Group();
+        if(newUserGroup.getGroupId().isEmpty()) group = null;
+        else group = groupRepository.getReferenceById(Long.valueOf(newUserGroup.getGroupId()));
 
+        if(user.isPresent()) {
+            user.get().setGroup(group);
+            user.get().setAdmin(newUserGroup.getAdmin().equals("admin") ? "Y" : "N");
+        }
     }
 
     public void addGroup(String name, String description) {
@@ -74,6 +81,6 @@ public class AdminService {
         newGroup.setName(name);
         newGroup.setDescription(description);
 
-        groupRepository.save(newGroup);
+        Group saveGroup = groupRepository.save(newGroup);
     }
 }

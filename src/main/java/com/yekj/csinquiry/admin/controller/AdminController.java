@@ -2,7 +2,9 @@ package com.yekj.csinquiry.admin.controller;
 
 import com.yekj.csinquiry.admin.dto.GroupDTO;
 import com.yekj.csinquiry.admin.dto.UserAuthDTO;
+import com.yekj.csinquiry.admin.exception.GroupAlreadyExistsException;
 import com.yekj.csinquiry.admin.service.AdminService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -32,6 +34,7 @@ public class AdminController {
         return ResponseEntity.ok(userAuth);
     }
 
+
     @GetMapping("/grouplist")
     public ResponseEntity<List<GroupDTO>> getGroupList() {
         List<GroupDTO> groupList = adminService.getGroupList();
@@ -46,7 +49,7 @@ public class AdminController {
         return ResponseEntity.ok(group);
     }
 
-    @PostMapping("/set-group")
+    @PutMapping("/set-userauth")
     public ResponseEntity<String> setUserAuth(@RequestBody UserAuthDTO userAuth) {
         try {
             adminService.setUserAuth(userAuth);
@@ -57,14 +60,42 @@ public class AdminController {
     }
 
     @PostMapping("/add-group")
-    public ResponseEntity<List<GroupDTO>> addGroup(@RequestBody String name, String description) {
+    public ResponseEntity<?> addGroup(@RequestBody GroupDTO group) {
         List<GroupDTO> newGroupList = null;
         try {
-            newGroupList = adminService.addGroup(name, description);
+            newGroupList = adminService.addGroup(group.getName(), group.getDescription());
         } catch (Exception e) {
-            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("사용자 권한 저장 실패.");
+           return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("그룹 추가 실패");
         }
 
         return ResponseEntity.ok(newGroupList);
+    }
+
+    @PutMapping("/group/{id}")
+    public ResponseEntity<?> updateGroup(@PathVariable String id, @RequestBody GroupDTO group) {
+        List<GroupDTO> updateGroupList = null;
+
+        try {
+            updateGroupList = adminService.updateGroup(id, group.getName(), group.getDescription());
+        } catch (Exception e) {
+           return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("그룹 수정 실패");
+        }
+
+        return ResponseEntity.ok(updateGroupList);
+    }
+
+    @DeleteMapping("/group/{id}")
+    public ResponseEntity<?> deleteGroup(@PathVariable String id) {
+        List<GroupDTO> deleteGroupList = null;
+
+        try {
+            deleteGroupList = adminService.deleteGroup(id);
+        } catch (GroupAlreadyExistsException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("사용자가 존재하는 그룹은 삭제가 불가능합니다.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("그룹 삭제 실패");
+        }
+
+        return ResponseEntity.ok(deleteGroupList);
     }
 }

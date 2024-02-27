@@ -2,10 +2,12 @@ package com.yekj.csinquiry.admin.service;
 
 import com.yekj.csinquiry.admin.dto.GroupDTO;
 import com.yekj.csinquiry.admin.dto.UserAuthDTO;
+import com.yekj.csinquiry.admin.exception.GroupAlreadyExistsException;
 import com.yekj.csinquiry.user.entity.Group;
 import com.yekj.csinquiry.user.entity.User;
 import com.yekj.csinquiry.user.repository.GroupRepository;
 import com.yekj.csinquiry.user.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -100,5 +102,32 @@ public class AdminService {
         List<GroupDTO> newGroupList = getGroupList();
 
         return newGroupList;
+    }
+
+    public List<GroupDTO> updateGroup(String id, String name, String description) throws Exception {
+        Optional<Group> updateGroup = groupRepository.findById(Long.valueOf(id));
+        if (updateGroup.isPresent()) {
+            updateGroup.get().setName(name);
+            updateGroup.get().setDescription(description);
+        } else {
+            throw new EntityNotFoundException();
+        }
+
+        List<GroupDTO> updateGroupList = getGroupList();
+
+        return updateGroupList;
+    }
+
+    public List<GroupDTO> deleteGroup(String id) throws Exception {
+        Optional<Group> group = groupRepository.findById(Long.valueOf(id));
+        int userCount = group.get().getUsers().size();
+        if(userCount > 0) {
+            throw new GroupAlreadyExistsException("사용자가 있으면 삭제 불가능");
+        }
+
+        groupRepository.deleteById(Long.valueOf(id));
+        List<GroupDTO> deleteGroupList = getGroupList();
+
+        return deleteGroupList;
     }
 }

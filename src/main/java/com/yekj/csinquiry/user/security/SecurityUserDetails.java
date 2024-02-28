@@ -28,8 +28,6 @@ public class SecurityUserDetails implements UserDetails {
         return authorities;
     }
 
-    public String getEmail() { return user.getEmail(); }
-
     @Override
     public String getPassword() {
         return user.getPassword();

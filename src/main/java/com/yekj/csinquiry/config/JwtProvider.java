@@ -47,8 +47,6 @@ public class JwtProvider {
 
         // 시간설정
         long nowMillis = System.currentTimeMillis();
-        Date now = new Date(nowMillis);
-
         long expMillis = nowMillis + 24 * 60 * 60 * 1000; // 24시간
         Date exp = new Date(expMillis);
 
@@ -63,7 +61,7 @@ public class JwtProvider {
 
     public Authentication getAuthentication(String token) {
         UserDetails userDetails = securityUserDetailsService.loadUserByUsername(this.getEmail(token));
-        return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        return new UsernamePasswordAuthenticationToken(userDetails, token, userDetails.getAuthorities());
     }
 
     public String getToken(HttpServletRequest request) {
@@ -88,11 +86,11 @@ public class JwtProvider {
         }
     }
 
-    public String getGroup(String token) {
+    public Long getGroup(String token) {
         token = token.split(" ")[1].trim();
         Jws<Claims> claimsJwt = Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token);
 
-        return claimsJwt.getPayload().get("group", String.class);
+        return Long.valueOf(claimsJwt.getPayload().get("group", String.class));
     }
 
     public String getEmail(String token) {
@@ -100,6 +98,13 @@ public class JwtProvider {
         Jws<Claims> claimsJwt = Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token);
 
         return claimsJwt.getPayload().get("email", String.class);
+    }
+
+    public Long getSubject(String token) {
+        token = token.split(" ")[1].trim();
+        Jws<Claims> claimsJwt = Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token);
+        String subject = claimsJwt.getPayload().getSubject();
+        return Long.valueOf(subject);
     }
 
 }

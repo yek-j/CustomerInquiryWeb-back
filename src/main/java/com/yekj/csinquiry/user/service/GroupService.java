@@ -9,7 +9,7 @@ public class GroupService {
     @Autowired
     private JwtProvider jwtProvider;
 
-    public String getGroupId(String token) {
+    public Long getGroupId(String token) {
         return jwtProvider.getGroup(token);
     }
 }

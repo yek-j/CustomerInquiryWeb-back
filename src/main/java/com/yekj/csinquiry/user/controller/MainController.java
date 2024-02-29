@@ -22,7 +22,7 @@ public class MainController {
 
     @GetMapping("/")
     public ResponseEntity<Map> mainPage(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, Authentication authentication) {
-       String groupId = groupService.getGroupId(token);
+       String groupId = String.valueOf(groupService.getGroupId(token));
        boolean admin = authentication.getAuthorities().stream().anyMatch(role -> role.getAuthority().toString().equals("ROLE_ADMIN"));
 
         Map<String, String> result = new HashMap<>();

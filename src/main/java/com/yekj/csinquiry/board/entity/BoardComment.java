@@ -3,6 +3,8 @@ package com.yekj.csinquiry.board.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.sql.Timestamp;
+
 @Entity
 @Table(name = "board_comment")
 @Data
@@ -17,4 +19,6 @@ public class BoardComment {
     private Long boardId;
 
     private Long writer;
+
+    private Timestamp wdate;
 }

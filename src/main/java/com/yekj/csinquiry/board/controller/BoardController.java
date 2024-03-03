@@ -59,4 +59,19 @@ public class BoardController {
         return ResponseEntity.ok("저장 성공");
     }
 
+    @GetMapping("/board/{id}")
+    public ResponseEntity<?> getBoard(@PathVariable String id, Authentication authentication) {
+        BoardDTO board = null;
+        String jwtToken = authentication.getCredentials().toString();
+        boolean admin = authentication.getAuthorities().stream().anyMatch(role -> role.getAuthority().toString().equals("ROLE_ADMIN"));
+
+        try {
+            board = boardService.getBoard(Long.valueOf(id), jwtToken, admin);
+            board.setAdmin(admin ? "admin" : "user");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+
+        return ResponseEntity.ok(board);
+    }
 }

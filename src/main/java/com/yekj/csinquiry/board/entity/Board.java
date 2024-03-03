@@ -27,4 +27,6 @@ public class Board {
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     private Date wdate;
+
+    private boolean resolved;
 }

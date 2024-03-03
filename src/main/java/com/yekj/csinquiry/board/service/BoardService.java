@@ -3,10 +3,13 @@ package com.yekj.csinquiry.board.service;
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.yekj.csinquiry.board.dto.BoardDTO;
 import com.yekj.csinquiry.board.dto.BoardListDTO;
 import com.yekj.csinquiry.board.dto.BoardPageDTO;
 import com.yekj.csinquiry.board.entity.Board;
+import com.yekj.csinquiry.board.entity.BoardComment;
 import com.yekj.csinquiry.board.entity.QBoard;
+import com.yekj.csinquiry.board.repository.BoardCommentRepository;
 import com.yekj.csinquiry.board.repository.BoardRepository;
 import com.yekj.csinquiry.config.JwtProvider;
 import com.yekj.csinquiry.user.entity.QGroup;
@@ -20,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -38,6 +42,9 @@ public class BoardService {
     private UserRepository userRepository;
 
     @Autowired
+    private BoardCommentRepository boardCommentRepository;
+
+    @Autowired
     public BoardService(EntityManager em) {
         this.queryFactory = new JPAQueryFactory(em);
     }
@@ -49,7 +56,7 @@ public class BoardService {
 
         JPAQuery<Tuple> query = queryFactory
                 .select(qBoard.id, qBoard.title, qBoard.content,
-                        qBoard.writer.name, qBoard.writer.group.name, qBoard.wdate)
+                        qBoard.writer.name, qBoard.writer.group.name, qBoard.wdate, qBoard.resolved)
                 .from(qBoard);
 
 
@@ -66,11 +73,12 @@ public class BoardService {
                     String writer = t.get(3, String.class);
                     String group = t.get(4, String.class);
                     Date wdate = t.get(5, Date.class);
+                    boolean resolved = Boolean.TRUE.equals(t.get(6, Boolean.class));
 
                     if (content.length() > 100) {
                         content = content.substring(0, 100);
                     }
-                    return new BoardListDTO(id, writer, title, content, group, wdate.toString());
+                    return new BoardListDTO(id, writer, title, content, group, wdate.toString(), resolved);
                 })
                 .collect(Collectors.toList());
 
@@ -106,6 +114,41 @@ public class BoardService {
         return true;
     }
 
+    public BoardDTO getBoard(Long id, String token, boolean admin) throws Exception {
+        BoardDTO boardDTO = new BoardDTO();
+        Long groupId = jwtProvider.getGroup(token);
+        Long userId = jwtProvider.getSubject(token);
+
+        Optional<Board> board = boardRepository.findById(id);
+
+        if(board.isPresent()){
+            if(!admin) {
+                Long boardGroupID = board.get().getWriter().getGroup().getId();
+                if (!Objects.equals(groupId, boardGroupID)) throw new Exception("권한이 없는 게시물은 확인할 수 없습니다.");
+            }
+
+            if(Objects.equals(userId, board.get().getWriter().getId())) boardDTO.setEdit(true);
+            else boardDTO.setEdit(false);
+
+            boardDTO.setTitle(board.get().getTitle());
+            boardDTO.setContent(board.get().getContent());
+            boardDTO.setWdate(board.get().getWdate());
+            boardDTO.setResolved(board.get().isResolved());
+
+            List<BoardComment> boardCommentList = boardCommentRepository.findBoardCommentByBoardId(id);
+
+            System.out.println(boardCommentList.size());
+
+            boardDTO.setWriterName(board.get().getWriter().getName());
+            boardDTO.setGroupName(board.get().getWriter().getGroup().getName());
+
+        } else {
+            throw new Exception("게시글을 찾을 수 없습니다.");
+        }
+
+        return boardDTO;
+    }
+
     private long pageCount(Long count) {
         if(count == null) count = boardRepository.count();
 
@@ -115,4 +158,5 @@ public class BoardService {
         }
         return total;
     }
+
 }

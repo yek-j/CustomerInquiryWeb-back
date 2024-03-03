@@ -12,4 +12,5 @@ public class BoardListDTO {
     private String preview;
     private String groupName;
     private String wdate;
+    private boolean resolved;
 }

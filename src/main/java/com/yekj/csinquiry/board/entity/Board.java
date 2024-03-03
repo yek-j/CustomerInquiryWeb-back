@@ -1,5 +1,6 @@
 package com.yekj.csinquiry.board.entity;
 
+import com.yekj.csinquiry.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
@@ -14,15 +15,14 @@ public class Board {
     @Column(name = "board_id")
     private Long id;
 
-    private Long writer;
+    @ManyToOne
+    @JoinColumn(name = "writer")
+    private User writer;
 
     @Column(length = 50)
     private String title;
 
     private String content;
-
-    @Column(name = "group_id")
-    private Long gid;
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)

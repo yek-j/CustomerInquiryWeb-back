@@ -21,4 +21,7 @@ public class BoardComment {
     private Long writer;
 
     private Timestamp wdate;
+
+    @Column(name = "parent_id")
+    private Long pid;
 }

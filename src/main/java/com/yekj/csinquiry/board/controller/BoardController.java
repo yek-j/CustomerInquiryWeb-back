@@ -1,5 +1,6 @@
 package com.yekj.csinquiry.board.controller;
 
+import com.yekj.csinquiry.board.dto.BoardDTO;
 import com.yekj.csinquiry.board.dto.BoardFormDTO;
 import com.yekj.csinquiry.board.dto.BoardPageDTO;
 import com.yekj.csinquiry.board.service.BoardService;
@@ -40,7 +41,7 @@ public class BoardController {
     }
 
     @PostMapping("/add-board")
-    public ResponseEntity<?> addBoard(@RequestBody BoardFormDTO newBoard, Authentication authentication) {
+    public ResponseEntity<String> addBoard(@RequestBody BoardFormDTO newBoard, Authentication authentication) {
         String jwtToken = authentication.getCredentials().toString();
         String title = newBoard.getTitle();
         String content = newBoard.getContent();
@@ -52,9 +53,10 @@ public class BoardController {
         try {
             boardService.addBoard(title, content, jwtToken);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("저장 실패");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
 
         return ResponseEntity.ok("저장 성공");
     }
+
 }

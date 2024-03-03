@@ -11,6 +11,8 @@ import com.yekj.csinquiry.board.repository.BoardRepository;
 import com.yekj.csinquiry.config.JwtProvider;
 import com.yekj.csinquiry.user.entity.QGroup;
 import com.yekj.csinquiry.user.entity.QUser;
+import com.yekj.csinquiry.user.entity.User;
+import com.yekj.csinquiry.user.repository.UserRepository;
 import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,6 +35,9 @@ public class BoardService {
     private BoardRepository boardRepository;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     public BoardService(EntityManager em) {
         this.queryFactory = new JPAQueryFactory(em);
     }
@@ -40,17 +46,14 @@ public class BoardService {
         Long groupId = jwtProvider.getGroup(token);
 
         QBoard qBoard  = QBoard.board;
-        QUser qUser = QUser.user;
-        QGroup qGroup = QGroup.group;
 
         JPAQuery<Tuple> query = queryFactory
-                .select(qBoard.id, qBoard.title, qBoard.content, qUser.name, qGroup.name, qBoard.wdate)
-                .from(qBoard)
-                .join(qUser).on(qBoard.writer.eq(qUser.id))
-                .join(qGroup).on(qBoard.gid.eq(qGroup.id));
+                .select(qBoard.id, qBoard.title, qBoard.content,
+                        qBoard.writer.name, qBoard.writer.group.name, qBoard.wdate)
+                .from(qBoard);
 
 
-        if(!admin) query.where(qBoard.gid.eq(groupId));
+        if(!admin) query.where(qBoard.writer.group.id.eq(groupId));
         query.offset(page * 10L);
         query.limit(10);
         List<Tuple> result = query.fetch();
@@ -71,22 +74,29 @@ public class BoardService {
                 })
                 .collect(Collectors.toList());
 
-        BoardPageDTO resultPage = new BoardPageDTO(pageCount(), boardList);
+        Long pageCount = 1L;
+        if(admin) pageCount = pageCount(null);
+        else pageCount = pageCount(Long.valueOf(boardList.size()));
+
+        BoardPageDTO resultPage = new BoardPageDTO(pageCount, boardList);
 
         return resultPage;
     }
 
     public void addBoard(String title, String content, String token) throws Exception{
         Long uid = jwtProvider.getSubject(token);
-        Long gid = jwtProvider.getGroup(token);
+        Optional<User> user = userRepository.findById(uid);
 
-        Board newBoard = new Board();
-        newBoard.setTitle(title);
-        newBoard.setContent(content);
-        newBoard.setWriter(uid);
-        newBoard.setGid(gid);
+        if(user.isPresent()) {
+            Board newBoard = new Board();
+            newBoard.setTitle(title);
+            newBoard.setContent(content);
+            newBoard.setWriter(user.get());
 
-        boardRepository.save(newBoard);
+            boardRepository.save(newBoard);
+        } else {
+            throw new Exception("사용자를 찾을 수 없습니다.");
+        }
     }
 
     public boolean validBoard(String title, String content) {
@@ -96,10 +106,11 @@ public class BoardService {
         return true;
     }
 
-    private long pageCount() {
-        long count = boardRepository.count();
+    private long pageCount(Long count) {
+        if(count == null) count = boardRepository.count();
+
         long total = count / 10;
-        if (count % 10 > 0) {
+        if ( count % 10 > 0) {
             total++;
         }
         return total;

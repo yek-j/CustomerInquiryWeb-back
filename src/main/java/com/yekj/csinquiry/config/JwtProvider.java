@@ -89,8 +89,9 @@ public class JwtProvider {
     public Long getGroup(String token) {
         token = token.split(" ")[1].trim();
         Jws<Claims> claimsJwt = Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token);
+        String groupId = claimsJwt.getPayload().get("group", String.class);
 
-        return Long.valueOf(claimsJwt.getPayload().get("group", String.class));
+        return groupId.isEmpty() ? null : Long.valueOf(groupId);
     }
 
     public String getEmail(String token) {

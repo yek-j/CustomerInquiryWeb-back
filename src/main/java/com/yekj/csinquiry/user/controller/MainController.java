@@ -21,13 +21,15 @@ public class MainController {
     private GroupService groupService;
 
     @GetMapping("/")
-    public ResponseEntity<Map> mainPage(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, Authentication authentication) {
-       String groupId = String.valueOf(groupService.getGroupId(token));
-       boolean admin = authentication.getAuthorities().stream().anyMatch(role -> role.getAuthority().toString().equals("ROLE_ADMIN"));
+    public ResponseEntity<Map> mainPage(Authentication authentication) {
+        String jwtToken = authentication.getCredentials().toString();
+        Long groupId = groupService.getGroupId(jwtToken);
+
+        boolean admin = authentication.getAuthorities().stream().anyMatch(role -> role.getAuthority().toString().equals("ROLE_ADMIN"));
 
         Map<String, String> result = new HashMap<>();
         result.put("admin", admin ? "admin" : "user");
-        result.put("group", groupId);
+        result.put("group", groupId != null ? String.valueOf(groupId) : null);
 
        return ResponseEntity.ok().body(result);
     }

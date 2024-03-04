@@ -79,10 +79,9 @@ public class BoardController {
     @ResponseBody
     public ResponseEntity<String> deleteBoard(@PathVariable String id, Authentication authentication) {
         String jwtToken = authentication.getCredentials().toString();
-        boolean admin = authentication.getAuthorities().stream().anyMatch(role -> role.getAuthority().toString().equals("ROLE_ADMIN"));
 
         try {
-            boardService.deleteBoard(Long.valueOf(id), jwtToken, admin);
+            boardService.deleteBoard(Long.valueOf(id), jwtToken);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
@@ -101,5 +100,19 @@ public class BoardController {
         }
 
         return ResponseEntity.ok("게시글 수정 완료");
+    }
+    
+    @PutMapping("/board/resolved/{id}")
+    public ResponseEntity<String> updateResolved(@PathVariable String id, Authentication authentication) {
+        boolean admin = authentication.getAuthorities().stream().anyMatch(role -> role.getAuthority().toString().equals("ROLE_ADMIN"));
+        if (!admin) return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("관리자만 변경할 수 있습니다.");
+        
+        try {
+            boardService.updateResloved(Long.valueOf(id));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+
+        return ResponseEntity.ok("해결 상태 변경 완료");
     }
 }

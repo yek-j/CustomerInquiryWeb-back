@@ -150,16 +150,14 @@ public class BoardService {
         return boardDTO;
     }
 
-    public void deleteBoard(Long id, String token, boolean admin) throws Exception{
+    public void deleteBoard(Long id, String token) throws Exception{
         Long userId = jwtProvider.getSubject(token);
 
         Optional<Board> board = boardRepository.findById(id);
 
         if (board.isPresent()) {
-            if(!admin) {
-                Long boardWriterId = board.get().getWriter().getId();
-                if (!Objects.equals(userId, boardWriterId)) throw new Exception("권한이 없는 게시물은 삭제할 수 없습니다.");
-            }
+            Long boardWriterId = board.get().getWriter().getId();
+            if (!Objects.equals(userId, boardWriterId)) throw new Exception("권한이 없는 게시물은 삭제할 수 없습니다.");
 
             boardRepository.delete(board.get());
 
@@ -181,6 +179,16 @@ public class BoardService {
             board.get().setContent(updateBoard.getContent());
         } else {
             throw new Exception("존재하지 않는 게시판으로 수정할 수 없습니다.");
+        }
+    }
+
+    public void updateResloved(Long id) throws Exception{
+        Optional<Board> updateBoard = boardRepository.findById(id);
+        if(updateBoard.isPresent()) {
+            boolean old = updateBoard.get().isResolved();
+            updateBoard.get().setResolved(!old);
+        } else {
+            throw new Exception("존재하지 않는 게시판으로 해결 상태 업데이트 실패");
         }
     }
 

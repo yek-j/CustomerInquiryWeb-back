@@ -74,4 +74,32 @@ public class BoardController {
 
         return ResponseEntity.ok(board);
     }
+
+    @DeleteMapping("/board/{id}")
+    @ResponseBody
+    public ResponseEntity<String> deleteBoard(@PathVariable String id, Authentication authentication) {
+        String jwtToken = authentication.getCredentials().toString();
+        boolean admin = authentication.getAuthorities().stream().anyMatch(role -> role.getAuthority().toString().equals("ROLE_ADMIN"));
+
+        try {
+            boardService.deleteBoard(Long.valueOf(id), jwtToken, admin);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+
+        return ResponseEntity.ok("게시글 삭제 완료");
+    }
+
+    @PutMapping("/board/{id}")
+    public ResponseEntity<String> updateBoard(@PathVariable String id, Authentication authentication, @RequestBody BoardFormDTO updateBoard) {
+        String jwtToken = authentication.getCredentials().toString();
+
+        try {
+            boardService.updateBoard(Long.valueOf(id), jwtToken, updateBoard);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+
+        return ResponseEntity.ok("게시글 수정 완료");
+    }
 }

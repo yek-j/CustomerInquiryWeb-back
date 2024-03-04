@@ -4,6 +4,7 @@ import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.yekj.csinquiry.board.dto.BoardDTO;
+import com.yekj.csinquiry.board.dto.BoardFormDTO;
 import com.yekj.csinquiry.board.dto.BoardListDTO;
 import com.yekj.csinquiry.board.dto.BoardPageDTO;
 import com.yekj.csinquiry.board.entity.Board;
@@ -147,6 +148,40 @@ public class BoardService {
         }
 
         return boardDTO;
+    }
+
+    public void deleteBoard(Long id, String token, boolean admin) throws Exception{
+        Long userId = jwtProvider.getSubject(token);
+
+        Optional<Board> board = boardRepository.findById(id);
+
+        if (board.isPresent()) {
+            if(!admin) {
+                Long boardWriterId = board.get().getWriter().getId();
+                if (!Objects.equals(userId, boardWriterId)) throw new Exception("권한이 없는 게시물은 삭제할 수 없습니다.");
+            }
+
+            boardRepository.delete(board.get());
+
+        } else {
+            throw new Exception("존재하지 않는 게시판으로 삭제할 수 없습니다.");
+        }
+    }
+
+    public void updateBoard(Long id, String token, BoardFormDTO updateBoard) throws Exception {
+        Long userId = jwtProvider.getSubject(token);
+
+        Optional<Board> board = boardRepository.findById(id);
+
+        if(board.isPresent()) {
+            Long boardWriterId = board.get().getWriter().getId();
+            if (!Objects.equals(userId, boardWriterId)) throw new Exception("권한이 없는 게시물은 수정할 수 없습니다.");
+
+            board.get().setTitle(updateBoard.getTitle());
+            board.get().setContent(updateBoard.getContent());
+        } else {
+            throw new Exception("존재하지 않는 게시판으로 수정할 수 없습니다.");
+        }
     }
 
     private long pageCount(Long count) {

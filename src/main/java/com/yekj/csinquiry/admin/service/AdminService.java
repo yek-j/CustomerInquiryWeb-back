@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 
 @Service
-@Transactional
 public class AdminService {
     @Autowired
     private UserRepository userRepository;
@@ -80,6 +79,7 @@ public class AdminService {
         return userAuthDTO;
     }
 
+    @Transactional
     public void setUserAuth(UserAuthDTO newUserGroup) throws Exception {
         Optional<User> user = userRepository.findUserByEmail(newUserGroup.getEmail());
         Group group = new Group();
@@ -92,6 +92,7 @@ public class AdminService {
         }
     }
 
+    @Transactional
     public List<GroupDTO> addGroup(String name, String description) throws Exception {
         Group newGroup = new Group();
         newGroup.setName(name);
@@ -104,6 +105,7 @@ public class AdminService {
         return newGroupList;
     }
 
+    @Transactional
     public List<GroupDTO> updateGroup(String id, String name, String description) throws Exception {
         Optional<Group> updateGroup = groupRepository.findById(Long.valueOf(id));
         if (updateGroup.isPresent()) {
@@ -118,6 +120,7 @@ public class AdminService {
         return updateGroupList;
     }
 
+    @Transactional
     public List<GroupDTO> deleteGroup(String id) throws Exception {
         Optional<Group> group = groupRepository.findById(Long.valueOf(id));
         int userCount = group.get().getUsers().size();

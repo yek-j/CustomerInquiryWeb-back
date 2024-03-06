@@ -13,8 +13,6 @@ import com.yekj.csinquiry.board.entity.QBoard;
 import com.yekj.csinquiry.board.repository.BoardCommentRepository;
 import com.yekj.csinquiry.board.repository.BoardRepository;
 import com.yekj.csinquiry.config.JwtProvider;
-import com.yekj.csinquiry.user.entity.QGroup;
-import com.yekj.csinquiry.user.entity.QUser;
 import com.yekj.csinquiry.user.entity.User;
 import com.yekj.csinquiry.user.repository.UserRepository;
 import jakarta.persistence.EntityManager;
@@ -29,7 +27,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional
 public class BoardService {
     @Autowired
     private JwtProvider jwtProvider;
@@ -92,6 +89,7 @@ public class BoardService {
         return resultPage;
     }
 
+    @Transactional
     public void addBoard(String title, String content, String token) throws Exception{
         Long uid = jwtProvider.getSubject(token);
         Optional<User> user = userRepository.findById(uid);
@@ -150,6 +148,7 @@ public class BoardService {
         return boardDTO;
     }
 
+    @Transactional
     public void deleteBoard(Long id, String token) throws Exception{
         Long userId = jwtProvider.getSubject(token);
 
@@ -166,6 +165,7 @@ public class BoardService {
         }
     }
 
+    @Transactional
     public void updateBoard(Long id, String token, BoardFormDTO updateBoard) throws Exception {
         Long userId = jwtProvider.getSubject(token);
 
@@ -182,6 +182,7 @@ public class BoardService {
         }
     }
 
+    @Transactional
     public void updateResloved(Long id) throws Exception{
         Optional<Board> updateBoard = boardRepository.findById(id);
         if(updateBoard.isPresent()) {

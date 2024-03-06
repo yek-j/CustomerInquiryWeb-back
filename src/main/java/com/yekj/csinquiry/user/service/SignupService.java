@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 
 @Service
-@Transactional
 public class SignupService {
     @Autowired
     private UserRepository userRepository;
@@ -19,6 +18,7 @@ public class SignupService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Transactional
     public boolean addUser(UserDTO userDTO) {
         Optional<User> findUser = userRepository.findUserByEmail(userDTO.getEmail());
 

@@ -2,12 +2,15 @@ package com.yekj.csinquiry.board.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
 
+import java.sql.Date;
 import java.sql.Timestamp;
 
 @Entity
 @Table(name = "board_comment")
 @Data
+
 public class BoardComment {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "comment_id")
@@ -20,8 +23,7 @@ public class BoardComment {
 
     private Long writer;
 
-    private Timestamp wdate;
-
-    @Column(name = "parent_id")
-    private Long pid;
+    @CreationTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date wdate;
 }

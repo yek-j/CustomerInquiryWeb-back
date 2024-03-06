@@ -1,14 +1,31 @@
 package com.yekj.csinquiry.board.service;
 
+import com.yekj.csinquiry.board.dto.BoardCommentFormDTO;
+import com.yekj.csinquiry.board.entity.BoardComment;
+import com.yekj.csinquiry.board.repository.BoardCommentRepository;
+import com.yekj.csinquiry.config.JwtProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class BoardCommentService {
-    // saveComment
-    // 저장 시 기존 Comment가 있는지 확인하고 없으면 parent_id = 0
-    // 이미 Comment가 있으면 parent_id + 1
-    public void saveComment(Long groupId) {
-        
+    @Autowired
+    private JwtProvider jwtProvider;
+
+    @Autowired
+    private BoardCommentRepository boardCommentRepository;
+
+    @Transactional
+    public void addComment(String token, BoardCommentFormDTO comment) throws Exception{
+        Long uid = jwtProvider.getSubject(token);
+        BoardComment newComment = new BoardComment();
+
+        newComment.setBoardId(Long.valueOf(comment.getBoardId()));
+        newComment.setComment(comment.getComment());
+        newComment.setWriter(uid);
+
+        boardCommentRepository.save(newComment);
     }
 
 }

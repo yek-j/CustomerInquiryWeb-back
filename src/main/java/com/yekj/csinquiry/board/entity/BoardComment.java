@@ -4,13 +4,11 @@ import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.sql.Date;
-import java.sql.Timestamp;
+import java.util.Date;
 
 @Entity
 @Table(name = "board_comment")
 @Data
-
 public class BoardComment {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "comment_id")

@@ -3,10 +3,7 @@ package com.yekj.csinquiry.board.service;
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.yekj.csinquiry.board.dto.BoardDTO;
-import com.yekj.csinquiry.board.dto.BoardFormDTO;
-import com.yekj.csinquiry.board.dto.BoardListDTO;
-import com.yekj.csinquiry.board.dto.BoardPageDTO;
+import com.yekj.csinquiry.board.dto.*;
 import com.yekj.csinquiry.board.entity.Board;
 import com.yekj.csinquiry.board.entity.BoardComment;
 import com.yekj.csinquiry.board.entity.QBoard;
@@ -134,12 +131,13 @@ public class BoardService {
             boardDTO.setWdate(board.get().getWdate());
             boardDTO.setResolved(board.get().isResolved());
 
-            List<BoardComment> boardCommentList = boardCommentRepository.findBoardCommentByBoardId(id);
-
-            System.out.println(boardCommentList.size());
+            List<BoardComment> getComment = boardCommentRepository.findBoardCommentByBoardId(id);
+            List<BoardCommentDTO> boardCommentList = getComment.stream()
+                            .map(c -> new BoardCommentDTO(c.getWriter().getName(), c.getComment(), c.getWdate().toString())).toList();
 
             boardDTO.setWriterName(board.get().getWriter().getName());
             boardDTO.setGroupName(board.get().getWriter().getGroup().getName());
+            boardDTO.setBoardComment(boardCommentList);
 
         } else {
             throw new Exception("게시글을 찾을 수 없습니다.");

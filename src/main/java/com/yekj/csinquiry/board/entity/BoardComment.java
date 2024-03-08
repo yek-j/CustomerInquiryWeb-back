@@ -1,5 +1,6 @@
 package com.yekj.csinquiry.board.entity;
 
+import com.yekj.csinquiry.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
@@ -19,7 +20,9 @@ public class BoardComment {
     @Column(name = "board_id")
     private Long boardId;
 
-    private Long writer;
+    @ManyToOne
+    @JoinColumn(name = "writer")
+    private User writer;
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)

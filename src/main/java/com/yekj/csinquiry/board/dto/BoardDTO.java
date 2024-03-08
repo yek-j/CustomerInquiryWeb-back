@@ -1,7 +1,6 @@
 package com.yekj.csinquiry.board.dto;
 
 import com.yekj.csinquiry.board.entity.Board;
-import com.yekj.csinquiry.board.entity.BoardComment;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -24,6 +23,6 @@ public class BoardDTO {
 
     private boolean edit;
 
-    private List<BoardComment> boardComment = new ArrayList<>();
+    private List<BoardCommentDTO> boardComment = new ArrayList<>();
 
 }

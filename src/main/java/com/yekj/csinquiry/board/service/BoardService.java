@@ -52,7 +52,8 @@ public class BoardService {
         JPAQuery<Tuple> query = queryFactory
                 .select(qBoard.id, qBoard.title, qBoard.content,
                         qBoard.writer.name, qBoard.writer.group.name, qBoard.wdate, qBoard.resolved)
-                .from(qBoard);
+                .from(qBoard)
+                .orderBy(qBoard.id.desc());
 
 
         if(!admin) query.where(qBoard.writer.group.id.eq(groupId));
@@ -130,15 +131,8 @@ public class BoardService {
             boardDTO.setContent(board.get().getContent());
             boardDTO.setWdate(board.get().getWdate());
             boardDTO.setResolved(board.get().isResolved());
-
-            List<BoardComment> getComment = boardCommentRepository.findBoardCommentByBoardId(id);
-            List<BoardCommentDTO> boardCommentList = getComment.stream()
-                            .map(c -> new BoardCommentDTO(c.getWriter().getName(), c.getComment(), c.getWdate().toString())).toList();
-
             boardDTO.setWriterName(board.get().getWriter().getName());
             boardDTO.setGroupName(board.get().getWriter().getGroup().getName());
-            boardDTO.setBoardComment(boardCommentList);
-
         } else {
             throw new Exception("게시글을 찾을 수 없습니다.");
         }
@@ -156,6 +150,8 @@ public class BoardService {
             Long boardWriterId = board.get().getWriter().getId();
             if (!Objects.equals(userId, boardWriterId)) throw new Exception("권한이 없는 게시물은 삭제할 수 없습니다.");
 
+            List<BoardComment> deleteComment = boardCommentRepository.findBoardCommentByBoardId(id);
+            if(!deleteComment.isEmpty()) boardCommentRepository.deleteAll(deleteComment);
             boardRepository.delete(board.get());
 
         } else {

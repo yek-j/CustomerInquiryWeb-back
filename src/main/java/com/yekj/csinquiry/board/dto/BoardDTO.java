@@ -3,9 +3,7 @@ package com.yekj.csinquiry.board.dto;
 import com.yekj.csinquiry.board.entity.Board;
 import lombok.Data;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 @Data
 public class BoardDTO {
@@ -22,7 +20,5 @@ public class BoardDTO {
     /* ---- */
 
     private boolean edit;
-
-    private List<BoardCommentDTO> boardComment = new ArrayList<>();
 
 }

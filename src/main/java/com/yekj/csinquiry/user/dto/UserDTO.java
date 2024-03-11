@@ -9,4 +9,5 @@ public class UserDTO {
     private String email;
     private String Password;
     private String name;
+    private String admin;
 }

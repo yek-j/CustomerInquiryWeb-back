@@ -4,6 +4,7 @@ import com.yekj.csinquiry.user.dto.Token;
 import com.yekj.csinquiry.user.dto.UserDTO;
 import com.yekj.csinquiry.user.service.SigninService;
 import com.yekj.csinquiry.user.service.SignupService;
+import com.yekj.csinquiry.user.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,6 +24,9 @@ public class UserController {
 
     @Autowired
     private SigninService signinService;
+
+    @Autowired
+    private UserService userService;
 
     @PostMapping("/signin")
     public ResponseEntity<Token> signIn(@RequestBody UserDTO user) throws Exception {
@@ -62,4 +66,34 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/userinfo")
+    public ResponseEntity<?> getUserInfo(Authentication authentication) {
+        String jwtToken = authentication.getCredentials().toString();
+        boolean admin = authentication.getAuthorities().stream().anyMatch(role -> role.getAuthority().toString().equals("ROLE_ADMIN"));
+
+        UserDTO userDTO = null;
+
+        try {
+            userDTO = userService.getUserInfo(jwtToken);
+            if(admin) userDTO.setAdmin("admin");
+            else userDTO.setAdmin("user");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+
+        return ResponseEntity.ok(userDTO);
+    }
+
+    @PutMapping("/userinfo")
+    public ResponseEntity<String> updateUserInfo(@RequestBody UserDTO updateInfo, Authentication authentication) {
+        String jwtToken = authentication.getCredentials().toString();
+
+        try {
+            userService.updateUserInfo(updateInfo, jwtToken);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+
+        return ResponseEntity.ok("사용자 정보 수정 완료");
+    }
 }

@@ -1,5 +1,6 @@
 package com.yekj.csinquiry.board.service;
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -16,11 +17,9 @@ import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,6 +28,7 @@ public class BoardService {
     private JwtProvider jwtProvider;
 
     private final JPAQueryFactory queryFactory;
+    private final QBoard qBoard  = QBoard.board;
 
     @Autowired
     private BoardRepository boardRepository;
@@ -44,22 +44,36 @@ public class BoardService {
         this.queryFactory = new JPAQueryFactory(em);
     }
 
-    public BoardPageDTO getBoardList(String token, boolean admin, int page) {
+    public BoardPageDTO getBoardList(String token, boolean admin, int page, String resolvedFilter, String writerFilter) {
         Long groupId = jwtProvider.getGroup(token);
 
-        QBoard qBoard  = QBoard.board;
 
         JPAQuery<Tuple> query = queryFactory
                 .select(qBoard.id, qBoard.title, qBoard.content,
                         qBoard.writer.name, qBoard.writer.group.name, qBoard.wdate, qBoard.resolved)
-                .from(qBoard)
-                .orderBy(qBoard.id.desc());
+                .from(qBoard);
 
+        BooleanBuilder builder = new BooleanBuilder();
 
-        if(!admin) query.where(qBoard.writer.group.id.eq(groupId));
-        query.offset(page * 10L);
-        query.limit(10);
-        List<Tuple> result = query.fetch();
+        if(!admin) {
+            builder.and(qBoard.writer.group.id.eq(groupId));
+        }
+        if(StringUtils.hasText(writerFilter)) {
+            builder.and(qBoard.writer.name.eq(writerFilter));
+        }
+
+        if(StringUtils.hasText(resolvedFilter) && !resolvedFilter.equals("all")) {
+            boolean whereResolved = resolvedFilter.equals("solved");
+            builder.and(qBoard.resolved.eq(whereResolved));
+        }
+
+        Long total = queryFactory.select(qBoard.count()).from(qBoard).where(builder).fetchOne();
+
+        List<Tuple> result = query.where(builder)
+                .orderBy(qBoard.id.desc())
+                .offset(page * 10L)
+                .limit(10)
+                .fetch();
 
         List<BoardListDTO> boardList = result.stream()
                 .map(t -> {
@@ -78,9 +92,7 @@ public class BoardService {
                 })
                 .collect(Collectors.toList());
 
-        Long pageCount = 1L;
-        if(admin) pageCount = pageCount(null);
-        else pageCount = pageCount(Long.valueOf(boardList.size()));
+        long pageCount = pageCount(total);
 
         BoardPageDTO resultPage = new BoardPageDTO(pageCount, boardList);
 

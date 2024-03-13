@@ -19,23 +19,14 @@ public class BoardController {
     private BoardService boardService;
 
     @GetMapping("/boardlist")
-    public ResponseEntity<BoardPageDTO> getBoardList(Authentication authentication) {
+    public ResponseEntity<BoardPageDTO> getBoardList(
+            @RequestParam(name = "page") int page, @RequestParam(name = "resolved", required = false) String resolved,
+            @RequestParam(name = "writer", required = false) String writer, Authentication authentication) {
         String jwtToken = authentication.getCredentials().toString();
 
         boolean admin = authentication.getAuthorities().stream().anyMatch(role -> role.getAuthority().toString().equals("ROLE_ADMIN"));
 
-        BoardPageDTO result = boardService.getBoardList(jwtToken, admin, 0);
-
-        return ResponseEntity.ok(result);
-    }
-
-    @GetMapping("/boardlist/{page}")
-    public ResponseEntity<BoardPageDTO> getBoardListPage(@PathVariable String page, Authentication authentication) {
-        String jwtToken = authentication.getCredentials().toString();
-
-        boolean admin = authentication.getAuthorities().stream().anyMatch(role -> role.getAuthority().toString().equals("ROLE_ADMIN"));
-
-        BoardPageDTO result = boardService.getBoardList(jwtToken, admin, Integer.valueOf(page));
+        BoardPageDTO result = boardService.getBoardList(jwtToken, admin, page, resolved, writer);
 
         return ResponseEntity.ok(result);
     }

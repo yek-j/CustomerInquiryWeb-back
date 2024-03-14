@@ -85,6 +85,10 @@ public class BoardService {
                     Date wdate = t.get(5, Date.class);
                     boolean resolved = Boolean.TRUE.equals(t.get(6, Boolean.class));
 
+                    content = content.replaceAll("<(/)?([a-zA-Z]*)(\\s[a-zA-Z]*=[^>]*)?(\\s)*(/)?>", "");
+                    if(content.indexOf("<img") > -1) {
+                        content = content.replaceAll("<img[^>]*>", "");
+                    }
                     if (content.length() > 100) {
                         content = content.substring(0, 100);
                     }

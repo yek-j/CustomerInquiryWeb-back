@@ -6,8 +6,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -33,6 +35,9 @@ import java.util.List;
 public class SecurityConfig {
     private final JwtProvider jwtProvider;
 
+    @Value("${security.cors.url}")
+    private String cors_url;
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -46,7 +51,7 @@ public class SecurityConfig {
                     CorsConfigurationSource source = request -> {
                         CorsConfiguration config = new CorsConfiguration();
                         config.setAllowCredentials(true);
-                        config.setAllowedOriginPatterns(List.of("http://localhost:5173"));
+                        config.setAllowedOriginPatterns(List.of(cors_url));
                         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
                         config.setAllowedHeaders(List.of("*"));
                         config.setExposedHeaders(List.of("*"));

@@ -33,4 +33,9 @@ public class MainController {
 
        return ResponseEntity.ok().body(result);
     }
+
+    @GetMapping("/hello")
+    public String healthCheckPage() {
+        return "hello";
+    }
 }
